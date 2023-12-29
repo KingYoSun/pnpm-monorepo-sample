@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+      dockerfile: Dockerfile.dev
+    image: bubitr_relay-backend:latest
+    env_file:
+      - .env
+    ports:
+      - 8090:8090
+    volumes:
+      - .:/app
+      - ./output:/output
+    healthcheck:
+      test: echo "fetch('http://localhost:8090/')" | node
+      interval: 10s
+      timeout: 8s
+      retries: 8
+      start_period: 5s
+    depends_on:
+      redis:
+        condition: service_healthy
+  frontend:
+    build:
+      context: .
+      target: frontend
+      dockerfile: Dockerfile.dev
+    image: bubitr_relay-frontend:latest
+    env_file:
+      - .env
+    ports:
+      - 5173:5173
+    volumes:
+      - .:/app
+    depends_on:
+      backend:
+        condition: service_healthy
+  redis:
+    image: redis:7.2.3-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 8s
+      retries: 8
+      start_period: 5s
+    volumes:
+      - redis:/data
+volumes:
+  redis:
+    driver: local
