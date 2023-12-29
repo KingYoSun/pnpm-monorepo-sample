@@ -13,7 +13,7 @@
 
 ```bash
   git clone https://github.com/KingYoSun/bubitr-relay.git
-  cd bubitr_relay
+  cd bubitr-relay
   mkdir output
   cp .env.default .env
   docker compose up --build -d
